@@ -1,0 +1,3 @@
+Matched_Supply_Title,Matched_Demand_Title,Match_Score,Notes
+Selling iPhone 13 128GB,Wanted: laptop under $500,42,"Example low score — different product category in strict rules"
+Selling iPhone 13 128GB,Wanted: iPhone under $500,88,"High score when demand exists for same category"

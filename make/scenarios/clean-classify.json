@@ -1,0 +1,53 @@
+{
+  "meta": {
+    "_repo_note": "Template flow for Make. Export your working scenario from Make and replace this file for a production-ready blueprint.",
+    "scenario_name": "Clean & Classify — Raw → Classified",
+    "trigger": "Airtable Watch records (Status=New) OR scheduled poll",
+    "version": "1.0.0"
+  },
+  "flow": [
+    {
+      "step": 1,
+      "module": "Airtable — Search records",
+      "action": "Raw Leads where Status = New (limit batch size)"
+    },
+    {
+      "step": 2,
+      "module": "Text — Replace / Regex",
+      "action": "Strip emojis; normalize whitespace; standardize currency e.g. $1,200 → 1200"
+    },
+    {
+      "step": 3,
+      "module": "Router",
+      "routes": [
+        {
+          "filter": "title/description contains selling signals OR numeric price > 0",
+          "label": "Supply"
+        },
+        {
+          "filter": "wanted | ISO | buying | need (case-insensitive)",
+          "label": "Demand"
+        },
+        {
+          "filter": "default",
+          "label": "Pending"
+        }
+      ]
+    },
+    {
+      "step": 4,
+      "module": "Set variable / Keywords",
+      "action": "Extract keywords (stopwords removed) for overlap matching later"
+    },
+    {
+      "step": 5,
+      "module": "Airtable — Create record",
+      "action": "Table: Classified — link Raw Lead; set Supply/Demand label; Keywords; Standardized_Price; Clean_Location"
+    },
+    {
+      "step": 6,
+      "module": "Airtable — Update record",
+      "action": "Raw Leads: Status = Processed"
+    }
+  ]
+}

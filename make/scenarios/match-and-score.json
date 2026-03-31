@@ -1,0 +1,46 @@
+{
+  "meta": {
+    "_repo_note": "Template flow for Make. Export your working scenario from Make and replace this file for a production-ready blueprint.",
+    "scenario_name": "Match & Score — Classified pairs → Matches",
+    "trigger": "Iterator / Airtable search on new Classified (Supply and Demand batches)",
+    "version": "1.0.0"
+  },
+  "matching_rules": [
+    "Location: same city OR Distance Matrix ≤ 50 miles",
+    "Category: exact match OR allowed parent/child map",
+    "Price: demand max ≥ supply price within ±20%",
+    "Keywords: ≥ 3 overlaps (fuzzy via Text Parser)"
+  ],
+  "flow": [
+    {
+      "step": 1,
+      "module": "Airtable — Search",
+      "action": "Batch of Classified with Label = Supply (or Demand-first, then pair)"
+    },
+    {
+      "step": 2,
+      "module": "Iterator",
+      "action": "For each candidate, find candidate opposite-side rows in same metro/category band"
+    },
+    {
+      "step": 3,
+      "module": "HTTP — Google Distance Matrix",
+      "action": "Compare origin/destination; reject if distance > 50 mi"
+    },
+    {
+      "step": 4,
+      "module": "Tools — Numeric compare",
+      "action": "Price fit: demand budget vs supply price"
+    },
+    {
+      "step": 5,
+      "module": "Text Parser",
+      "action": "Keyword overlap count; threshold ≥ 3"
+    },
+    {
+      "step": 6,
+      "module": "Airtable — Create/Update",
+      "action": "Matches table; set component fields for formula OR write Match_Score from Make math"
+    }
+  ]
+}

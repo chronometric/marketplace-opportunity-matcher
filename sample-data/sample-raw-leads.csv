@@ -1,0 +1,4 @@
+Source,Title,Description,Price,Location,Category,Raw_Data,Timestamp,Status
+Craigslist,"Selling iPhone 13 128GB","Like new, unlocked. $450 OBO.",450,"Seattle, WA",Electronics,"{""feed"":""craigslist/rss""}",2026-03-31T14:00:00Z,New
+Craigslist,"Wanted: laptop under $500","ISO decent Windows laptop for school.",,"Bellevue, WA",Electronics,"{""feed"":""craigslist/rss""}",2026-03-31T15:30:00Z,New
+Facebook RSS,"Free couch — curb alert","Pickup only tonight.",0,"Tacoma, WA",Furniture,"{""feed"":""fb_placeholder""}",2026-03-31T09:00:00Z,New

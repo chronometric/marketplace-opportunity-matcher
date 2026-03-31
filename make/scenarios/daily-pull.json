@@ -1,0 +1,50 @@
+{
+  "meta": {
+    "_repo_note": "Template flow for Make. Export your working scenario from Make and replace this file for a production-ready blueprint.",
+    "scenario_name": "Daily Pull — RSS & CSV → Raw Leads",
+    "trigger": "Schedule — daily 06:00 (timezone: your team)",
+    "version": "1.0.0"
+  },
+  "flow": [
+    {
+      "step": 1,
+      "module": "Schedule",
+      "action": "Run scenario at configured cron"
+    },
+    {
+      "step": 2,
+      "module": "RSS",
+      "action": "Read feed items (per marketplace feed URL)"
+    },
+    {
+      "step": 3,
+      "module": "Iterator",
+      "action": "One bundle per listing"
+    },
+    {
+      "step": 4,
+      "module": "Text parser / Regex",
+      "action": "Extract title, description snippet, price from title or description"
+    },
+    {
+      "step": 5,
+      "module": "HTTP — Google Geocoding",
+      "action": "Geocode Location string → lat/lng or normalized city (respect API key & quotas)"
+    },
+    {
+      "step": 6,
+      "module": "Airtable — Create a record",
+      "action": "Table: Raw Leads — map Source, Title, Description, Price, Location, Category, Raw_Data (JSON), Timestamp, Status=New"
+    },
+    {
+      "step": 7,
+      "module": "Error handler",
+      "action": "Retry up to 3×; on failure → Slack message with bundle payload excerpt"
+    },
+    {
+      "step": "alt",
+      "module": "Manual CSV path",
+      "action": "Webhook or Google Drive watch → parse CSV → same Airtable Create mapping"
+    }
+  ]
+}

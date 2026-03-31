@@ -1,0 +1,15 @@
+# Secrets
+.env
+.env.*
+*.pem
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editors
+.idea/
+.vscode/
+
+# Logs
+*.log
