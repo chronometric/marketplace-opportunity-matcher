@@ -1,6 +1,41 @@
 # Marketplace Opportunity Matcher & Prioritizer
 
-A reliable daily workflow to collect listings from online marketplaces (e.g., Craigslist, Facebook Marketplace where RSS/API exists), store and clean data in **Airtable**, apply **rule-based matching** (supply vs. demand), **score** opportunities, and output a prioritized **Top 10** list in **Google Sheets**. Automations run in **Make** (with Zapier as a CSV fallback), using APIs, RSS, and manual CSV upload—**no scraping**. Designed to process **500+ records/day** with high classification accuracy.
+> **Elevator line:** A production-style daily workflow that collects marketplace listings (RSS / API / CSV—**no scraping**), stores and cleans data in **Airtable**, classifies **supply vs. demand**, **scores** matches, and ships a prioritized **Top 10** to **Google Sheets** with **Make** (Zapier optional for CSV/email fallback).
+
+## At a glance
+
+| | |
+|--|--|
+| **Positioning** | End-to-end automation & operations — reliable schedules, error handling, stakeholder-ready output |
+| **Core stack** | **Airtable** · **Make** · **Google Sheets** · **Zapier** (fallback) · **Google APIs** (geocode / distance) · **Slack** |
+| **Throughput** | **500+** new leads/day (design target); rule-based matching at scale |
+| **What ships** | Classified records, scored **Matches**, filtered **Top Opportunities** view, **Daily_Top_10** sheet + optional email/Slack |
+| **Differentiator** | No brittle scraping — **RSS**, **APIs**, and **manual CSV** paths; explicit **Pending** queue for ambiguous listings |
+
+**Impact & delivery** *(edit numbers to match your engagement before portfolio use)*
+
+| Metric | Reference |
+|--------|-------------|
+| Test volume | **2,500+** labeled test records |
+| Accuracy | **~98%** match accuracy in test runs |
+| Uptime (pilot) | **0** unplanned downtime over **14** days |
+| Cost (indicative) | **~$15/mo** Make + Airtable Pro–class tiers + API usage |
+| Timeline | **~1 week** build + **~1 week** hardening |
+
+**Contact & links** *(replace placeholders)*
+
+| | |
+|--|--|
+| **Author** | *Your Name* |
+| **LinkedIn / portfolio** | *https://* |
+| **Airtable template** | [`airtable/AIRTABLE_TEMPLATE.md`](airtable/AIRTABLE_TEMPLATE.md) |
+| **Screenshots / demos** | [`assets/screenshots/`](assets/screenshots/) |
+
+---
+
+## What this repo contains
+
+A reliable daily workflow to collect listings from online marketplaces (e.g., Craigslist, Facebook Marketplace where RSS/API exists), store and clean data in **Airtable**, apply **rule-based matching** (supply vs. demand), **score** opportunities, and output a prioritized **Top 10** list in **Google Sheets**. Automations run in **Make** (with Zapier as a CSV fallback), using APIs, RSS, and manual CSV upload. Designed for **500+ records/day** with high classification accuracy.
 
 ---
 
