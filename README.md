@@ -54,6 +54,8 @@ A reliable daily workflow to collect listings from online marketplaces (e.g., Cr
 | [`make/DAILY_PULL.md`](make/DAILY_PULL.md) | **Ingest:** RSS + CSV → Raw Leads, geocode, retries, Slack |
 | [`make/CLEAN_CLASSIFY.md`](make/CLEAN_CLASSIFY.md) | **Clean & classify:** regex, price, category map, Router → Classified |
 | [`make/MATCH_AND_SCORE.md`](make/MATCH_AND_SCORE.md) | **Match & score:** Distance Matrix, price/keyword rules → Matches |
+| [`make/DAILY_TOP_10.md`](make/DAILY_TOP_10.md) | **Daily output:** Top Opportunities → Google Sheets **Daily_Top_10**; optional Gmail/Slack |
+| [`zapier/ZAPIER_FALLBACK.md`](zapier/ZAPIER_FALLBACK.md) | **Zapier:** email CSV → Airtable or Make webhook (optional) |
 | [`make/scenarios/`](make/scenarios/) | Make scenario flow templates (JSON) — rebuild in Make, then export real blueprints here |
 | [`airtable/`](airtable/) | [`SETUP.md`](airtable/SETUP.md) (build order), [`schema.md`](airtable/schema.md) (reference), [`formulas.md`](airtable/formulas.md), [`AIRTABLE_TEMPLATE.md`](airtable/AIRTABLE_TEMPLATE.md) (share link when ready) |
 | [`sample-data/`](sample-data/) | Example CSVs for Raw Leads and manual upload testing |
@@ -128,14 +130,14 @@ Full field-level detail and formula placeholders: [`airtable/schema.md`](airtabl
 
 Build **Daily Pull** using [`make/DAILY_PULL.md`](make/DAILY_PULL.md) (field mapping, geocode HTTP, CSV webhook, Slack, 3× retry). Use [`sample-data/manual-upload-template.csv`](sample-data/manual-upload-template.csv) for the CSV path.
 
-**Clean & Classify:** [`make/CLEAN_CLASSIFY.md`](make/CLEAN_CLASSIFY.md) (~95% auto-classify target). **Match & Score:** [`make/MATCH_AND_SCORE.md`](make/MATCH_AND_SCORE.md) (50 mi, ±20% price fit, ≥3 keyword overlaps; **>70** / **>80** thresholds).
+**Clean & Classify:** [`make/CLEAN_CLASSIFY.md`](make/CLEAN_CLASSIFY.md) (~95% auto-classify target). **Match & Score:** [`make/MATCH_AND_SCORE.md`](make/MATCH_AND_SCORE.md) (50 mi, ±20% price fit, ≥3 keyword overlaps; **>70** / **>80** thresholds). **Daily Top 10:** [`make/DAILY_TOP_10.md`](make/DAILY_TOP_10.md). **Zapier:** [`zapier/ZAPIER_FALLBACK.md`](zapier/ZAPIER_FALLBACK.md).
 
 | Scenario | Trigger | Role |
 |----------|---------|------|
 | **Daily Pull** | Schedule (e.g., 6 AM) | RSS → parse → Raw Leads; optional CSV path; geocode; error handler → Slack |
 | **Clean & Classify** | Webhook or Airtable “when record matches” / scheduled poll | Regex, category mapping, price normalization, Supply/Demand Router |
 | **Match & Score** | Iterator over new Classified rows | Location/category/price/keyword rules; create/update Matches; set component scores for Airtable formula |
-| **Daily Top 10** | Schedule (e.g., 7 AM) | Query view → dedupe pairs → Google Sheet `Daily_Top_10` → optional email |
+| **Daily Top 10** | Schedule (e.g., 7 AM) | Query **Top Opportunities** → dedupe pairs → Google Sheet `Daily_Top_10` → optional Gmail/Slack |
 
 Import JSON from [`make/scenarios/`](make/scenarios/). See [`make/IMPORT_INSTRUCTIONS.md`](make/IMPORT_INSTRUCTIONS.md) for export/import notes.
 
@@ -177,7 +179,7 @@ Details and example Airtable patterns: [`scoring/README.md`](scoring/README.md) 
 
 ## Daily output (Google Sheets)
 
-Columns (example): **Opportunity_Pair**, **Score**, **Links** (supply/demand URLs or Airtable record links), **Action_Next** (e.g., email template or Slack channel). Share the sheet and optionally email a PDF/ link to the team; embed the Airtable dashboard where useful.
+Columns (example): **Opportunity_Pair**, **Score**, **Links** (supply/demand URLs or Airtable record links), **Action_Next** (e.g., email template or Slack channel). Share the sheet and optionally email a PDF/ link to the team; embed the Airtable dashboard where useful. Implementation: [`make/DAILY_TOP_10.md`](make/DAILY_TOP_10.md).
 
 ---
 
@@ -207,10 +209,12 @@ Indicative ops cost (your mileage may vary): on the order of tens of dollars per
 2. **Ingest (Make):** Implement **Daily Pull** per [`make/DAILY_PULL.md`](make/DAILY_PULL.md) — schedule, RSS iterator, geocoding, Airtable **Raw Leads** create, **3×** retry, **Slack** on failure; optional CSV/webhook path with [`sample-data/manual-upload-template.csv`](sample-data/manual-upload-template.csv). Export blueprint into [`make/scenarios/`](make/scenarios/).
 3. **Clean & Classify (Make):** Implement per [`make/CLEAN_CLASSIFY.md`](make/CLEAN_CLASSIFY.md); export [`clean-classify.json`](make/scenarios/clean-classify.json).
 4. **Match & Score (Make):** Implement per [`make/MATCH_AND_SCORE.md`](make/MATCH_AND_SCORE.md); export [`match-and-score.json`](make/scenarios/match-and-score.json).
-5. Duplicate the base (from your template link) or continue in the same base; plug in API keys (Make, Google, Slack).
-6. Import remaining Make scenarios (e.g. Daily Top 10); reconnect modules to your Airtable base and Google Sheet.
-7. Load [`sample-data/sample-raw-leads.csv`](sample-data/sample-raw-leads.csv) to validate paths.
-8. Add real RSS URLs and run a dry-run day before production.
+5. **Daily Top 10 (Make):** Implement per [`make/DAILY_TOP_10.md`](make/DAILY_TOP_10.md); export [`daily-top-10.json`](make/scenarios/daily-top-10.json); create Google Sheet tab **Daily_Top_10**.
+6. **Zapier (optional):** If email CSV fallback is needed, configure [`zapier/ZAPIER_FALLBACK.md`](zapier/ZAPIER_FALLBACK.md).
+7. Duplicate the base (from your template link) or continue in the same base; plug in API keys (Make, Google, Slack).
+8. Import remaining Make scenarios; reconnect modules to your Airtable base and Google Sheet.
+9. Load [`sample-data/sample-raw-leads.csv`](sample-data/sample-raw-leads.csv) to validate paths.
+10. Add real RSS URLs and run a dry-run day before production.
 
 ---
 

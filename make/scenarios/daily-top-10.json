@@ -1,40 +1,32 @@
 {
   "meta": {
-    "_repo_note": "Template flow for Make. Export your working scenario from Make and replace this file for a production-ready blueprint.",
+    "_repo_note": "Flow template. Export the real Blueprint from Make after connecting modules.",
     "scenario_name": "Daily Top 10 — Top Opportunities → Google Sheets",
-    "trigger": "Schedule — daily 07:00",
-    "version": "1.0.0"
+    "trigger_schedule": "07:00 daily (after match/score jobs; set timezone in Make)",
+    "version": "1.1.0"
+  },
+  "prerequisite": "Matches table + Top Opportunities view (Score > 80, last 24h)",
+  "google_sheet": {
+    "spreadsheet": "Team or project file",
+    "tab": "Daily_Top_10",
+    "header_row": ["Opportunity_Pair", "Score", "Links", "Action_Next"],
+    "write_mode": "Clear data rows then append 10 rows OR update range A2:D11"
+  },
+  "columns_detail": {
+    "Opportunity_Pair": "Supply Display Title + Demand Display Title (from Classified lookups)",
+    "Score": "Match_Score",
+    "Links": "Airtable record URLs and/or listing URLs from Raw_Data",
+    "Action_Next": "Static template e.g. Review in Airtable + Slack hint"
   },
   "flow": [
-    {
-      "step": 1,
-      "module": "Schedule",
-      "action": "Run after matching/scoring jobs completed"
-    },
-    {
-      "step": 2,
-      "module": "Airtable — Search records",
-      "action": "View: Top Opportunities (Score > 80, last 24h) OR equivalent filter via formula fields"
-    },
-    {
-      "step": 3,
-      "module": "Array / Deduplicate",
-      "action": "Unique supply/demand pairs (by record IDs)"
-    },
-    {
-      "step": 4,
-      "module": "Sort",
-      "action": "Match_Score descending; take top 10"
-    },
-    {
-      "step": 5,
-      "module": "Google Sheets — Add/update rows",
-      "action": "Spreadsheet: Daily_Top_10 — columns Opportunity_Pair, Score, Links, Action_Next"
-    },
-    {
-      "step": 6,
-      "module": "Gmail / Slack",
-      "action": "Optional: email sheet link or post summary to channel"
-    }
-  ]
+    { "step": 1, "module": "Schedule", "action": "Daily 07:00" },
+    { "step": 2, "module": "Airtable — Search records", "action": "View Top Opportunities OR equivalent filter" },
+    { "step": 3, "module": "Sort", "action": "Match_Score descending" },
+    { "step": 4, "module": "Deduplicate", "action": "Unique (Matched_Supply id, Matched_Demand id); keep best score" },
+    { "step": 5, "module": "Limit / Iterator", "action": "Top 10 only" },
+    { "step": 6, "module": "Iterator + Airtable Get", "action": "Lookup Classified titles for pair labels" },
+    { "step": 7, "module": "Google Sheets", "action": "Clear rows 2+ or Update range; write 10 rows" },
+    { "step": 8, "module": "Gmail / Slack", "action": "Optional: email sheet link; post summary to channel" }
+  ],
+  "empty_state": "If 0 matches: optional single row or Slack message No opportunities today"
 }

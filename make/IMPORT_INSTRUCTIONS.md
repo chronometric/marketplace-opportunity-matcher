@@ -23,6 +23,8 @@ The JSON files committed here are **templates / documentation aids**. After you 
 | [`DAILY_PULL.md`](DAILY_PULL.md) | Ingest: RSS, CSV, geocode, Slack, retries |
 | [`CLEAN_CLASSIFY.md`](CLEAN_CLASSIFY.md) | Clean, category map, Supply/Demand/Pending Router → Classified |
 | [`MATCH_AND_SCORE.md`](MATCH_AND_SCORE.md) | Distance Matrix, price/keyword rules → Matches + score components |
+| [`DAILY_TOP_10.md`](DAILY_TOP_10.md) | Top Opportunities → dedupe → **Daily_Top_10** sheet; optional Gmail/Slack |
+| [`../zapier/ZAPIER_FALLBACK.md`](../zapier/ZAPIER_FALLBACK.md) | Email CSV → Airtable or Make webhook (optional) |
 
 | File | Purpose |
 |------|---------|
