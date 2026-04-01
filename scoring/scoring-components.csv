@@ -1,7 +1,7 @@
 Component,Weight_Points,Example_Value_0_to_1,Weighted_Partial,Notes
-Location_Match,30,1,30,1 = same city or within 50mi
-Category_Match,25,1,25,1 = exact or allowed subcategory
+Loc_Match,30,1,30,1 = same city or within 50mi
+Cat_Match,25,1,25,1 = exact or allowed subcategory
 Price_Fit,20,0.85,17,0.85 = strong fit within demand budget
 Keyword_Overlap,15,0.8,12,0.8 = high overlap of extracted keywords
-Freshness_Bonus,10,1,10,1 = full bonus if under 24h; scale 0-1 for decay
+Freshness_Mult,10,1,10,1 = full bonus if under 24h; scale 0-1 for decay
 ,,,Total_Score,94

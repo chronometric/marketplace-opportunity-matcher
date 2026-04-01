@@ -4,20 +4,22 @@
 
 | Component | Weight (points) | Typical implementation |
 |-----------|-----------------|-------------------------|
-| Location_Match | 30 | 1 if same city or within radius; else 0 |
-| Category_Match | 25 | 1 on exact/parent match; partial weights optional |
+| Loc_Match (concept: location) | 30 | 1 if same city or within radius; else 0 |
+| Cat_Match (concept: category) | 25 | 1 on exact/parent match; partial weights optional |
 | Price_Fit | 20 | Scale 0–1: how well supply price fits demand budget |
 | Keyword_Overlap | 15 | Scale 0–1 from overlap count / max keywords |
-| Freshness_Bonus | 10 | 10 if &lt; 24h; linear decay to 0 |
+| Freshness_Mult | 10 | 0–1 then ×10 in formula; 1 = full freshness &lt; 24h (see [`airtable/formulas.md`](../airtable/formulas.md)) |
 
 **Total:** 100 when all components are normalized to 0–1 except where noted.
 
 ## Formula (conceptual)
 
 ```
-Score = (Location_Match × 30) + (Category_Match × 25) + (Price_Fit × 20)
-        + (Keyword_Overlap × 15) + (Freshness_Bonus × 10)
+Score = (Loc_Match × 30) + (Cat_Match × 25) + (Price_Fit × 20)
+        + (Keyword_Overlap × 15) + (Freshness_Mult × 10)
 ```
+
+Field names match the **Matches** table in [`airtable/schema.md`](../airtable/schema.md).
 
 ## Airtable vs Make
 

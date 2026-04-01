@@ -60,7 +60,7 @@ A reliable daily workflow to collect listings from online marketplaces (e.g., Cr
 | [`airtable/`](airtable/) | [`SETUP.md`](airtable/SETUP.md) (build order), [`schema.md`](airtable/schema.md) (reference), [`formulas.md`](airtable/formulas.md), [`AIRTABLE_TEMPLATE.md`](airtable/AIRTABLE_TEMPLATE.md) (share link when ready) |
 | [`sample-data/`](sample-data/) | Example CSVs for Raw Leads and manual upload testing |
 | [`scoring/`](scoring/) | Scoring weights, Airtable formula notes, and a CSV for Google Sheets |
-| [`docs/TESTING.md`](docs/TESTING.md) | **Launch:** labeled evaluation, 14-day pilot, cost check, README alignment, sign-off |
+| [`docs/`](docs/) | [`TESTING.md`](docs/TESTING.md) — launch validation; [`docs/README.md`](docs/README.md) — doc index |
 | [`assets/screenshots/`](assets/screenshots/) | Screenshot list, redaction rules, portfolio checklist |
 
 ---
@@ -103,25 +103,30 @@ flowchart LR
 
 | Field | Type | Notes |
 |-------|------|--------|
+| Display Title | Single line text | Primary (short label for the row) |
 | Raw Lead | Link | |
-| Supply/Demand | Single select | Supply / Demand / Pending |
-| Keywords | Long text or multi-line | Auto-extracted |
+| Label | Single select | `Supply` / `Demand` / `Pending` |
+| Keywords | Long text | Auto-extracted |
 | Standardized_Price | Number | |
 | Clean_Location | Single line text | Normalized address or city |
+| Category_Standard | Single line text | Mapped category (e.g. Electronics) |
 
-### Matches (self-linked supply/demand)
+### Matches (supply ↔ demand pairs)
 
 | Field | Type | Notes |
 |-------|------|--------|
-| Matched_Supply_ID | Link to Classified | Supply side |
-| Matched_Demand_ID | Link to Classified | Demand side |
-| Match_Score | Number | 0–100 |
+| Matched_Supply | Link to Classified | Supply-side row |
+| Matched_Demand | Link to Classified | Demand-side row |
+| Loc_Match, Cat_Match | Number | 0 or 1 |
+| Price_Fit, Keyword_Overlap, Freshness_Mult | Number | 0–1 (inputs to formula) |
+| Match_Score | Formula | 0–100 (see [`airtable/formulas.md`](airtable/formulas.md)) |
+| Is_Recent | Formula | Use for **Top Opportunities** (last 24h) |
 | Notes | Long text | Optional |
 
 ### Top Opportunities (view)
 
-- Filter: **Match_Score** > 80 (adjust as needed), **Timestamp** within last 24 hours (or use formula fields for freshness).
-- Sort: Score descending.
+- Filter: **Match_Score** > 80 **and** **Is_Recent** (matches created in the last 24 hours).
+- Sort: **Match_Score** descending.
 
 Full field-level detail and formula placeholders: [`airtable/schema.md`](airtable/schema.md).
 
@@ -163,14 +168,14 @@ Target: ~**95%** auto-classify to Supply or Demand; remainder **Pending** (see [
 - **Price:** Demand max ≥ supply price within a tolerance (e.g., ±20%).
 - **Keywords:** Minimum overlaps; fuzzy match via Make Text Parser or similar.
 
-**Composite score (conceptual):**
+**Composite score (conceptual)** — Airtable fields **`Loc_Match`**, **`Cat_Match`**, **`Freshness_Mult`** ([`airtable/schema.md`](airtable/schema.md)):
 
 ```
-Score = (Location_Match × 30) + (Category_Match × 25) + (Price_Fit × 20)
-        + (Keyword_Overlap × 15) + (Freshness_Bonus × 10)
+Score = (Loc_Match × 30) + (Cat_Match × 25) + (Price_Fit × 20)
+        + (Keyword_Overlap × 15) + (Freshness_Mult × 10)
 ```
 
-- **Freshness:** Full 10 points if &lt; 24h; decay linearly afterward (implement via Airtable formula or helper fields).
+- **Freshness:** **`Freshness_Mult`** is 0–1; multiplied by 10 in the formula (full weight when listing is fresh; decay linearly — see [`airtable/formulas.md`](airtable/formulas.md)).
 
 Matches above **~70** are strong candidates; **Top Opportunities** view typically uses **> 80** for the daily shortlist.
 
@@ -206,16 +211,17 @@ Indicative ops cost (your mileage may vary): on the order of tens of dollars per
 ## Setup checklist
 
 1. **Airtable:** Follow [`airtable/SETUP.md`](airtable/SETUP.md) to create **Opportunity Hub** (tables, links, scoring fields, **Top Opportunities** view). Add formulas from [`airtable/formulas.md`](airtable/formulas.md). Publish the template URL in [`airtable/AIRTABLE_TEMPLATE.md`](airtable/AIRTABLE_TEMPLATE.md).
-2. **Ingest (Make):** Implement **Daily Pull** per [`make/DAILY_PULL.md`](make/DAILY_PULL.md) — schedule, RSS iterator, geocoding, Airtable **Raw Leads** create, **3×** retry, **Slack** on failure; optional CSV/webhook path with [`sample-data/manual-upload-template.csv`](sample-data/manual-upload-template.csv). Export blueprint into [`make/scenarios/`](make/scenarios/).
-3. **Clean & Classify (Make):** Implement per [`make/CLEAN_CLASSIFY.md`](make/CLEAN_CLASSIFY.md); export [`clean-classify.json`](make/scenarios/clean-classify.json).
-4. **Match & Score (Make):** Implement per [`make/MATCH_AND_SCORE.md`](make/MATCH_AND_SCORE.md); export [`match-and-score.json`](make/scenarios/match-and-score.json).
-5. **Daily Top 10 (Make):** Implement per [`make/DAILY_TOP_10.md`](make/DAILY_TOP_10.md); export [`daily-top-10.json`](make/scenarios/daily-top-10.json); create Google Sheet tab **Daily_Top_10**.
-6. **Zapier (optional):** If email CSV fallback is needed, configure [`zapier/ZAPIER_FALLBACK.md`](zapier/ZAPIER_FALLBACK.md).
-7. Duplicate the base (from your template link) or continue in the same base; plug in API keys (Make, Google, Slack).
-8. Import remaining Make scenarios; reconnect modules to your Airtable base and Google Sheet.
-9. Load [`sample-data/sample-raw-leads.csv`](sample-data/sample-raw-leads.csv) to validate paths.
-10. Add real RSS URLs and run a dry-run day before production.
-11. **Validate & portfolio:** Follow [`docs/TESTING.md`](docs/TESTING.md) (labeled accuracy, pilot, cost); add redacted screenshots per [`assets/screenshots/README.md`](assets/screenshots/README.md); update **Impact & delivery** in this README with **measured** numbers.
+2. **Credentials:** Duplicate or open your base; add **Airtable** PAT, **Google** APIs (Geocoding, Distance Matrix, Sheets), and **Slack** to Make (and Zapier if used). Note **Base ID** from **Help → API documentation**.
+3. **Ingest (Make):** Build **Daily Pull** per [`make/DAILY_PULL.md`](make/DAILY_PULL.md); optional CSV via [`sample-data/manual-upload-template.csv`](sample-data/manual-upload-template.csv). Export blueprint to [`make/scenarios/daily-pull.json`](make/scenarios/daily-pull.json) or save alongside as `daily-pull.export.json`.
+4. **Clean & Classify (Make):** [`make/CLEAN_CLASSIFY.md`](make/CLEAN_CLASSIFY.md) → export [`clean-classify.json`](make/scenarios/clean-classify.json).
+5. **Match & Score (Make):** [`make/MATCH_AND_SCORE.md`](make/MATCH_AND_SCORE.md) → export [`match-and-score.json`](make/scenarios/match-and-score.json).
+6. **Daily Top 10 (Make):** [`make/DAILY_TOP_10.md`](make/DAILY_TOP_10.md) → Google Sheet **Daily_Top_10**; export [`daily-top-10.json`](make/scenarios/daily-top-10.json).
+7. **Zapier (optional):** [`zapier/ZAPIER_FALLBACK.md`](zapier/ZAPIER_FALLBACK.md).
+8. **Smoke test:** Load [`sample-data/sample-raw-leads.csv`](sample-data/sample-raw-leads.csv) and related [`sample-data/`](sample-data/) files; run one end-to-end pass with test feeds.
+9. **Production:** Add real RSS URLs; enable schedules; monitor Slack and Make history.
+10. **Validate & portfolio:** [`docs/TESTING.md`](docs/TESTING.md); screenshots [`assets/screenshots/README.md`](assets/screenshots/README.md); update **Impact & delivery** above with **measured** numbers.
+
+**Note:** JSON files under [`make/scenarios/`](make/scenarios/) are **flow templates**. [Make](https://www.make.com) blueprints must be built in the UI (or imported if you export a real blueprint) — see [`make/IMPORT_INSTRUCTIONS.md`](make/IMPORT_INSTRUCTIONS.md).
 
 ---
 
