@@ -51,6 +51,7 @@ A reliable daily workflow to collect listings from online marketplaces (e.g., Cr
 
 | Path | Purpose |
 |------|---------|
+| [`make/DAILY_PULL.md`](make/DAILY_PULL.md) | **Ingest:** RSS + CSV → Raw Leads, geocode, retries, Slack |
 | [`make/scenarios/`](make/scenarios/) | Make scenario flow templates (JSON) — rebuild in Make, then export real blueprints here |
 | [`airtable/`](airtable/) | [`SETUP.md`](airtable/SETUP.md) (build order), [`schema.md`](airtable/schema.md) (reference), [`formulas.md`](airtable/formulas.md), [`AIRTABLE_TEMPLATE.md`](airtable/AIRTABLE_TEMPLATE.md) (share link when ready) |
 | [`sample-data/`](sample-data/) | Example CSVs for Raw Leads and manual upload testing |
@@ -122,6 +123,8 @@ Full field-level detail and formula placeholders: [`airtable/schema.md`](airtabl
 ---
 
 ## Make scenarios (summary)
+
+Build **Daily Pull** using [`make/DAILY_PULL.md`](make/DAILY_PULL.md) (field mapping, geocode HTTP, CSV webhook, Slack, 3× retry). Use [`sample-data/manual-upload-template.csv`](sample-data/manual-upload-template.csv) for the CSV path.
 
 | Scenario | Trigger | Role |
 |----------|---------|------|
@@ -197,10 +200,11 @@ Indicative ops cost (your mileage may vary): on the order of tens of dollars per
 ## Setup checklist
 
 1. **Airtable:** Follow [`airtable/SETUP.md`](airtable/SETUP.md) to create **Opportunity Hub** (tables, links, scoring fields, **Top Opportunities** view). Add formulas from [`airtable/formulas.md`](airtable/formulas.md). Publish the template URL in [`airtable/AIRTABLE_TEMPLATE.md`](airtable/AIRTABLE_TEMPLATE.md).
-2. Duplicate the base (from your template link) or continue in the same base; plug in API keys (Make, Google, Slack).
-3. Import Make scenarios; reconnect modules to your Airtable base and Google Sheet.
-4. Load [`sample-data/sample-raw-leads.csv`](sample-data/sample-raw-leads.csv) to validate paths.
-5. Add real RSS URLs and run a dry-run day before production.
+2. **Ingest (Make):** Implement **Daily Pull** per [`make/DAILY_PULL.md`](make/DAILY_PULL.md) — schedule, RSS iterator, geocoding, Airtable **Raw Leads** create, **3×** retry, **Slack** on failure; optional CSV/webhook path with [`sample-data/manual-upload-template.csv`](sample-data/manual-upload-template.csv). Export blueprint into [`make/scenarios/`](make/scenarios/).
+3. Duplicate the base (from your template link) or continue in the same base; plug in API keys (Make, Google, Slack).
+4. Import remaining Make scenarios; reconnect modules to your Airtable base and Google Sheet.
+5. Load [`sample-data/sample-raw-leads.csv`](sample-data/sample-raw-leads.csv) to validate paths.
+6. Add real RSS URLs and run a dry-run day before production.
 
 ---
 

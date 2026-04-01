@@ -1,50 +1,54 @@
 {
   "meta": {
-    "_repo_note": "Template flow for Make. Export your working scenario from Make and replace this file for a production-ready blueprint.",
+    "_repo_note": "Flow template. Export the real Blueprint from Make after connecting modules.",
     "scenario_name": "Daily Pull — RSS & CSV → Raw Leads",
-    "trigger": "Schedule — daily 06:00 (timezone: your team)",
-    "version": "1.0.0"
+    "trigger_schedule": "06:00 daily (set timezone in Make)",
+    "version": "1.1.0"
   },
-  "flow": [
-    {
-      "step": 1,
-      "module": "Schedule",
-      "action": "Run scenario at configured cron"
-    },
-    {
-      "step": 2,
-      "module": "RSS",
-      "action": "Read feed items (per marketplace feed URL)"
-    },
-    {
-      "step": 3,
-      "module": "Iterator",
-      "action": "One bundle per listing"
-    },
-    {
-      "step": 4,
-      "module": "Text parser / Regex",
-      "action": "Extract title, description snippet, price from title or description"
-    },
-    {
-      "step": 5,
-      "module": "HTTP — Google Geocoding",
-      "action": "Geocode Location string → lat/lng or normalized city (respect API key & quotas)"
-    },
-    {
-      "step": 6,
-      "module": "Airtable — Create a record",
-      "action": "Table: Raw Leads — map Source, Title, Description, Price, Location, Category, Raw_Data (JSON), Timestamp, Status=New"
-    },
-    {
-      "step": 7,
-      "module": "Error handler",
-      "action": "Retry up to 3×; on failure → Slack message with bundle payload excerpt"
-    },
-    {
-      "step": "alt",
-      "module": "Manual CSV path",
-      "action": "Webhook or Google Drive watch → parse CSV → same Airtable Create mapping"
+  "airtable_raw_leads_mapping": {
+    "table": "Raw Leads",
+    "fields": {
+      "Title": "rss.title | csv.title",
+      "Source": "constant or csv.source",
+      "Description": "rss.description | csv.description",
+      "Price": "parsed number or csv.price",
+      "Location": "parsed | csv.location (pre-geocode)",
+      "Category": "rss.category | csv.category",
+      "Raw_Data": "json({ rss, geocode_response })",
+      "Timestamp": "now() | rss.pubDate | csv.timestamp",
+      "Status": "New"
     }
-  ]
+  },
+  "branches": [
+    {
+      "name": "RSS",
+      "trigger": "Schedule",
+      "flow": [
+        { "step": 1, "module": "Schedule", "action": "Daily 06:00" },
+        { "step": 2, "module": "RSS > Read feed", "action": "Per marketplace feed URL" },
+        { "step": 3, "module": "Iterator", "action": "Each feed item" },
+        { "step": 4, "module": "Text parser / Regex", "action": "Title, description, price, location, category" },
+        { "step": 5, "module": "HTTP", "action": "GET maps.googleapis.com/maps/api/geocode/json?address=...&key=..." },
+        { "step": 6, "module": "Airtable > Create a record", "action": "Raw Leads — see airtable_raw_leads_mapping" },
+        { "step": 7, "module": "Error handler", "action": "Retry up to 3×; then Slack" }
+      ]
+    },
+    {
+      "name": "CSV",
+      "trigger": "Webhook / Google Drive / Zapier",
+      "flow": [
+        { "step": 1, "module": "Webhook or Google Drive", "action": "Receive CSV or file" },
+        { "step": 2, "module": "Parse CSV", "action": "Iterator per row" },
+        { "step": 3, "module": "Text parser / Regex", "action": "Normalize columns if needed" },
+        { "step": 4, "module": "HTTP", "action": "Geocoding API (same as RSS branch)" },
+        { "step": 5, "module": "Airtable > Create a record", "action": "Same mapping as RSS" },
+        { "step": 6, "module": "Error handler", "action": "Retry up to 3×; then Slack" }
+      ]
+    }
+  ],
+  "slack": {
+    "on_failure": true,
+    "payload": "scenario name, module, error, excerpt of bundle"
+  },
+  "zapier_fallback": "Email CSV → Zapier → Webhook to Make with same JSON shape as CSV branch"
 }

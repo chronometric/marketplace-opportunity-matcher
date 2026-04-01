@@ -18,6 +18,8 @@ The JSON files committed here are **templates / documentation aids**. After you 
 
 ## Scenario files in this repo
 
+Full ingest spec (RSS, CSV, geocode, Slack, retries): [`DAILY_PULL.md`](DAILY_PULL.md).
+
 | File | Purpose |
 |------|---------|
 | `daily-pull.json` | RSS + CSV path → Raw Leads, geocoding hooks |
