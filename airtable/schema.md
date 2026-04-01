@@ -1,65 +1,117 @@
-# Airtable schema — Opportunity Hub
+# Airtable schema — Opportunity Hub (reference)
 
-Use these tables and fields to align Make modules and formulas. Adjust types if your base uses slightly different Airtable field types (e.g., Currency vs Number).
+Single source of truth for table and field names. Align Make modules and [`SETUP.md`](SETUP.md) with this document.
+
+## Base
+
+- **Name:** Opportunity Hub  
+- **Tables:** Raw Leads → Classified → Matches  
+
+---
 
 ## Table: Raw Leads
 
-| Field name | Suggested type | Description |
-|------------|----------------|-------------|
-| Source | Single line text | Marketplace identifier |
-| Title | Single line text | Listing title |
-| Description | Long text | Body text |
-| Price | Number or Single line text | Raw or cleaned in Make first |
-| Location | Single line text | City, region, or free text |
-| Category | Single line text | From feed or inferred |
-| Raw_Data | Long text | JSON of original item |
-| Timestamp | Created time or Date | Ingest time |
-| Status | Single select | `New`, `Processed` |
-| Classified | Link to Classified | One-to-one or one-to-many per your design |
+Primary field: **Title**
+
+| Field name | Type | Required | Notes |
+|------------|------|----------|--------|
+| Title | Single line text | Yes | Primary; listing title |
+| Source | Single line text | | Marketplace name (Craigslist, etc.) |
+| Description | Long text | | Full body |
+| Price | Number or Single line text | | Normalize in Make for downstream math |
+| Location | Single line text | | Geocode in Make |
+| Category | Single line text | | From feed or inferred |
+| Raw_Data | Long text | | Original JSON / bundle |
+| Timestamp | Date (time) | | Ingest time if not using Created only |
+| Status | Single select | | `New`, `Processed` |
+| Classified | Link to Classified | | Usually one classified row per raw lead |
+
+**Volume:** Designed for **500+ rows/day**; index/filter by `Status` and `Timestamp` in views.
+
+---
 
 ## Table: Classified
 
-| Field name | Suggested type | Description |
-|------------|----------------|-------------|
-| Raw Lead | Link to Raw Leads | Source row |
-| Label | Single select | `Supply`, `Demand`, `Pending` |
-| Keywords | Long text | Comma or newline separated |
-| Standardized_Price | Number | Normalized USD (or your currency) |
-| Clean_Location | Single line text | Geocoded label or city |
-| Category_Standard | Single line text | Mapped category e.g. Electronics |
+Primary field: **Display Title** (or equivalent short text)
 
-Helper fields (optional) for scoring in formulas:
+| Field name | Type | Required | Notes |
+|------------|------|----------|--------|
+| Display Title | Single line text | Yes | Primary; mirror of listing title for scanning |
+| Raw Lead | Link to Raw Leads | Yes | Source row |
+| Label | Single select | | `Supply`, `Demand`, `Pending` |
+| Keywords | Long text | | Auto-extracted in Make |
+| Standardized_Price | Number | | e.g. USD |
+| Clean_Location | Single line text | | After geocode / cleanup |
+| Category_Standard | Single line text | | Mapped category (Electronics, …) |
 
-| Field name | Suggested type | Description |
-|------------|----------------|-------------|
-| Location_Match | Number | 0 or 1 (set by automation) |
-| Category_Match | Number | 0 or 1 |
-| Price_Fit | Number | 0–1 |
-| Keyword_Overlap | Number | 0–1 |
-| Freshness_Bonus | Number | 0–10 |
+**Auto-classify target:** ~**95%** into Supply/Demand; remainder **Pending** for manual review.
+
+---
 
 ## Table: Matches
 
-| Field name | Suggested type | Description |
-|------------|----------------|-------------|
-| Matched_Supply_ID | Link to Classified (record type Supply) | |
-| Matched_Demand_ID | Link to Classified (record type Demand) | |
-| Match_Score | Number | 0–100 |
-| Notes | Long text | |
-| Created | Created time | |
+Links two **Classified** rows (one supply, one demand). Scoring components live here; **Match_Score** is a **Formula** (see [`formulas.md`](formulas.md)).
 
-## Formula field example (Match_Score)
+Primary field: **Match ID** (Autonumber recommended)
 
-Implement component fields first (either filled by Make or rollup/lookup), then a formula on **Matches** similar to:
+| Field name | Type | Notes |
+|------------|------|--------|
+| Match ID | Autonumber | Primary |
+| Matched_Supply | Link to Classified | Supply-side classified row |
+| Matched_Demand | Link to Classified | Demand-side classified row |
+| Loc_Match | Number | 0 or 1 |
+| Cat_Match | Number | 0 or 1 |
+| Price_Fit | Number | 0–1 |
+| Keyword_Overlap | Number | 0–1 |
+| Freshness_Mult | Number | 0–1 |
+| Match_Score | Formula | Weighted 0–100 |
+| Is_Recent | Formula | Last 24h (for views) |
+| Notes | Long text | Optional |
+| Created | Created time | For freshness filters |
+
+**Thresholds:** **>70** = strong match (optional view); **>80** + last 24h = **Top Opportunities** (see views).
+
+---
+
+## Views
+
+### Matches → Top Opportunities
+
+- **Filter:** `Match_Score` **>** `80` **AND** `Is_Recent` (last 24h).  
+- **Sort:** `Match_Score` descending.
+
+### Matches → Strong matches (optional)
+
+- **Filter:** `Match_Score` **>** `70`.
+
+### Raw Leads → New queue (optional)
+
+- **Filter:** `Status` = `New`.
+
+### Classified → Pending (optional)
+
+- **Filter:** `Label` = `Pending`.
+
+---
+
+## Formula summary
 
 ```
-(Location_Match * 30) + (Category_Match * 25) + (Price_Fit * 20)
-+ (Keyword_Overlap * 15) + (Freshness_Bonus * 10)
+Match_Score =
+  (Loc_Match × 30) + (Cat_Match × 25) + (Price_Fit × 20)
+  + (Keyword_Overlap × 15) + (Freshness_Mult × 10)
 ```
 
-In Airtable, reference numeric fields with `{Field_Name}` and ensure each component is stored as a number. Normalize **Price_Fit** and **Keyword_Overlap** to 0–1 **before** multiplying by 20 and 15 if your formula expects that scale.
+Copy-paste versions: [`formulas.md`](formulas.md).
 
-## View: Top Opportunities
+---
 
-- **Filter:** `{Match_Score} > 80` AND created within last 24 hours (use a formula field `Is_Recent` if needed).
-- **Sort:** `{Match_Score}` descending.
+## Naming: spec vs base
+
+| Spec wording | Suggested field name in base |
+|--------------|------------------------------|
+| Matched_Supply_ID | `Matched_Supply` (link) |
+| Matched_Demand_ID | `Matched_Demand` (link) |
+| Supply/Demand label | `Label` on Classified |
+
+Record IDs for API/Make: use Airtable record `id` from linked rows.
