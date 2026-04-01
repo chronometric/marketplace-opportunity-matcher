@@ -60,7 +60,8 @@ A reliable daily workflow to collect listings from online marketplaces (e.g., Cr
 | [`airtable/`](airtable/) | [`SETUP.md`](airtable/SETUP.md) (build order), [`schema.md`](airtable/schema.md) (reference), [`formulas.md`](airtable/formulas.md), [`AIRTABLE_TEMPLATE.md`](airtable/AIRTABLE_TEMPLATE.md) (share link when ready) |
 | [`sample-data/`](sample-data/) | Example CSVs for Raw Leads and manual upload testing |
 | [`scoring/`](scoring/) | Scoring weights, Airtable formula notes, and a CSV for Google Sheets |
-| [`assets/screenshots/`](assets/screenshots/) | Place screenshots here for documentation (repo ships with a placeholder README) |
+| [`docs/TESTING.md`](docs/TESTING.md) | **Launch:** labeled evaluation, 14-day pilot, cost check, README alignment, sign-off |
+| [`assets/screenshots/`](assets/screenshots/) | Screenshot list, redaction rules, portfolio checklist |
 
 ---
 
@@ -197,9 +198,8 @@ Indicative ops cost (your mileage may vary): on the order of tens of dollars per
 
 ## Testing & reliability
 
-- Run batch tests (e.g., thousands of synthetic or anonymized rows) and compare classifications/matches to a labeled set.
-- Use Make error handlers, retries (e.g., 3×), and Slack (or email) for failure logs.
-- Monitor API quotas (Google, Airtable rate limits).
+- **Launch validation:** labeled dataset metrics, **14-day** pilot, cost verification, README number updates, screenshots — see [`docs/TESTING.md`](docs/TESTING.md).  
+- **Ongoing:** Make error handlers, retries (e.g., 3×), Slack (or email) for failure logs; monitor API quotas (Google, Airtable rate limits).
 
 ---
 
@@ -215,15 +215,16 @@ Indicative ops cost (your mileage may vary): on the order of tens of dollars per
 8. Import remaining Make scenarios; reconnect modules to your Airtable base and Google Sheet.
 9. Load [`sample-data/sample-raw-leads.csv`](sample-data/sample-raw-leads.csv) to validate paths.
 10. Add real RSS URLs and run a dry-run day before production.
+11. **Validate & portfolio:** Follow [`docs/TESTING.md`](docs/TESTING.md) (labeled accuracy, pilot, cost); add redacted screenshots per [`assets/screenshots/README.md`](assets/screenshots/README.md); update **Impact & delivery** in this README with **measured** numbers.
 
 ---
 
 ## License
 
-Use and adapt for your project. Add a `LICENSE` file if you need a specific open-source terms.
+[MIT](LICENSE) — documentation and sample data in this repo; your Airtable bases and Make blueprints remain yours.
 
 ---
 
 ## Contributing
 
-Replace template links, add your exported Make blueprints after testing, and drop screenshots into `assets/screenshots/` for a polished README on GitHub.
+Replace template links, add your exported Make blueprints after testing, and add screenshots under [`assets/screenshots/`](assets/screenshots/) for a polished README on GitHub.

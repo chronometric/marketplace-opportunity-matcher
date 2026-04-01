@@ -1,13 +1,42 @@
-# Screenshots
+# Screenshots and portfolio assets
 
-Add screenshots here for documentation and portfolio use.
+Add images here for **documentation**, **README** embeds, and **portfolio** (Upwork, case studies). Prefer **PNG** or **WebP**; keep files **under ~500 KB** each when possible.
 
-**Suggested captures:**
+## Required redactions
 
-1. **Airtable** — Opportunity Hub grid: Raw Leads with Status filters.
-2. **Airtable** — Classified table showing Supply/Demand/Pending.
-3. **Airtable** — Matches table with Match_Score sorted.
-4. **Make** — Daily Pull scenario (overview with modules, no secrets).
-5. **Google Sheets** — `Daily_Top_10` tab with columns filled.
+Before **git commit**:
 
-**Privacy:** Redact API keys, personal emails, and exact addresses before committing.
+- API keys, tokens, webhook URLs  
+- Personal emails, phone numbers, real street addresses  
+- Client or marketplace account names if under NDA  
+
+Use fake data or crop panels that show structure only.
+
+## Suggested captures
+
+| # | Asset | What to show |
+|---|--------|----------------|
+| 1 | `airtable-raw-leads.png` | **Raw Leads** grid; Status filter **New** / **Processed** |
+| 2 | `airtable-classified.png` | **Classified** with **Label** Supply / Demand / Pending |
+| 3 | `airtable-matches.png` | **Matches** sorted by **Match_Score** |
+| 4 | `make-daily-pull.png` | **Make** scenario canvas — **Daily Pull** (blur connection names if needed) |
+| 5 | `make-flow-overview.png` | Optional second scenario — **Clean & Classify** or **Match & Score** |
+| 6 | `sheets-daily-top-10.png` | **Google Sheets** tab **Daily_Top_10** with headers |
+
+## README embed
+
+After adding files, you can reference them from the repo root README:
+
+```markdown
+![Airtable Raw Leads](assets/screenshots/airtable-raw-leads.png)
+```
+
+Use **relative paths** so GitHub renders them on the default branch.
+
+## Portfolio checklist
+
+- [ ] At least **three** images: Airtable + Make + Sheets  
+- [ ] Short **caption** in README or case-study doc  
+- [ ] Same visual style (light theme, similar zoom)  
+
+See [`docs/TESTING.md`](../../docs/TESTING.md) for launch validation.
