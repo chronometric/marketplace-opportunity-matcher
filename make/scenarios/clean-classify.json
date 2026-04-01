@@ -1,53 +1,57 @@
 {
   "meta": {
-    "_repo_note": "Template flow for Make. Export your working scenario from Make and replace this file for a production-ready blueprint.",
+    "_repo_note": "Flow template. Export the real Blueprint from Make after connecting modules.",
     "scenario_name": "Clean & Classify — Raw → Classified",
-    "trigger": "Airtable Watch records (Status=New) OR scheduled poll",
-    "version": "1.0.0"
+    "trigger_options": ["Airtable Watch records (Status=New)", "Schedule + Search New batch"],
+    "target_auto_classify": "~95% Supply or Demand; rest Pending",
+    "version": "1.1.0"
   },
-  "flow": [
-    {
-      "step": 1,
-      "module": "Airtable — Search records",
-      "action": "Raw Leads where Status = New (limit batch size)"
-    },
-    {
-      "step": 2,
-      "module": "Text — Replace / Regex",
-      "action": "Strip emojis; normalize whitespace; standardize currency e.g. $1,200 → 1200"
-    },
-    {
-      "step": 3,
-      "module": "Router",
-      "routes": [
-        {
-          "filter": "title/description contains selling signals OR numeric price > 0",
-          "label": "Supply"
-        },
-        {
-          "filter": "wanted | ISO | buying | need (case-insensitive)",
-          "label": "Demand"
-        },
-        {
-          "filter": "default",
-          "label": "Pending"
-        }
-      ]
-    },
-    {
-      "step": 4,
-      "module": "Set variable / Keywords",
-      "action": "Extract keywords (stopwords removed) for overlap matching later"
-    },
-    {
-      "step": 5,
-      "module": "Airtable — Create record",
-      "action": "Table: Classified — link Raw Lead; set Supply/Demand label; Keywords; Standardized_Price; Clean_Location"
-    },
-    {
-      "step": 6,
-      "module": "Airtable — Update record",
-      "action": "Raw Leads: Status = Processed"
+  "classified_field_map": {
+    "table": "Classified",
+    "fields": {
+      "Display Title": "raw.Title",
+      "Raw Lead": "link raw record id",
+      "Label": "Supply | Demand | Pending",
+      "Keywords": "extracted tokens",
+      "Standardized_Price": "number",
+      "Clean_Location": "string",
+      "Category_Standard": "mapped category"
     }
+  },
+  "cleaning": {
+    "emoji_strip": "regex / Replace",
+    "price_patterns": ["$1,200 → 1200", "range $100-200 → avg 150", "free → 0"],
+    "category_examples": [
+      { "keywords": ["iphone", "ipad", "macbook"], "Category_Standard": "Electronics" },
+      { "keywords": ["bike", "bicycle"], "Category_Standard": "Sports" }
+    ]
+  },
+  "router_order": [
+    {
+      "route": 1,
+      "label": "Demand",
+      "signals": "(?i)(wanted|iso|buying|need|looking for|wtb)"
+    },
+    {
+      "route": 2,
+      "label": "Supply",
+      "signals": "(?i)(selling|for sale|obo|firm)|Standardized_Price>0"
+    },
+    {
+      "route": 3,
+      "label": "Pending",
+      "signals": "default"
+    }
+  ],
+  "flow": [
+    { "step": 1, "module": "Airtable — Search records", "action": "Raw Leads Status=New (limit batch)" },
+    { "step": 2, "module": "Iterator", "action": "One Raw Lead per run" },
+    { "step": 3, "module": "Text — Replace / Regex", "action": "Strip emojis; normalize whitespace" },
+    { "step": 4, "module": "Numeric / Regex", "action": "Standardized_Price from title/description" },
+    { "step": 5, "module": "Router or Switch", "action": "Category_Standard from keyword map" },
+    { "step": 6, "module": "Router", "action": "Label = Demand | Supply | Pending (see router_order)" },
+    { "step": 7, "module": "Text / Array", "action": "Keywords; stopwords removed" },
+    { "step": 8, "module": "Airtable — Create record", "action": "Classified — classified_field_map" },
+    { "step": 9, "module": "Airtable — Update record", "action": "Raw Leads Status=Processed" }
   ]
 }

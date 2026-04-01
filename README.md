@@ -52,6 +52,8 @@ A reliable daily workflow to collect listings from online marketplaces (e.g., Cr
 | Path | Purpose |
 |------|---------|
 | [`make/DAILY_PULL.md`](make/DAILY_PULL.md) | **Ingest:** RSS + CSV → Raw Leads, geocode, retries, Slack |
+| [`make/CLEAN_CLASSIFY.md`](make/CLEAN_CLASSIFY.md) | **Clean & classify:** regex, price, category map, Router → Classified |
+| [`make/MATCH_AND_SCORE.md`](make/MATCH_AND_SCORE.md) | **Match & score:** Distance Matrix, price/keyword rules → Matches |
 | [`make/scenarios/`](make/scenarios/) | Make scenario flow templates (JSON) — rebuild in Make, then export real blueprints here |
 | [`airtable/`](airtable/) | [`SETUP.md`](airtable/SETUP.md) (build order), [`schema.md`](airtable/schema.md) (reference), [`formulas.md`](airtable/formulas.md), [`AIRTABLE_TEMPLATE.md`](airtable/AIRTABLE_TEMPLATE.md) (share link when ready) |
 | [`sample-data/`](sample-data/) | Example CSVs for Raw Leads and manual upload testing |
@@ -126,6 +128,8 @@ Full field-level detail and formula placeholders: [`airtable/schema.md`](airtabl
 
 Build **Daily Pull** using [`make/DAILY_PULL.md`](make/DAILY_PULL.md) (field mapping, geocode HTTP, CSV webhook, Slack, 3× retry). Use [`sample-data/manual-upload-template.csv`](sample-data/manual-upload-template.csv) for the CSV path.
 
+**Clean & Classify:** [`make/CLEAN_CLASSIFY.md`](make/CLEAN_CLASSIFY.md) (~95% auto-classify target). **Match & Score:** [`make/MATCH_AND_SCORE.md`](make/MATCH_AND_SCORE.md) (50 mi, ±20% price fit, ≥3 keyword overlaps; **>70** / **>80** thresholds).
+
 | Scenario | Trigger | Role |
 |----------|---------|------|
 | **Daily Pull** | Schedule (e.g., 6 AM) | RSS → parse → Raw Leads; optional CSV path; geocode; error handler → Slack |
@@ -145,7 +149,7 @@ Import JSON from [`make/scenarios/`](make/scenarios/). See [`make/IMPORT_INSTRUC
 | “wanted”, “ISO”, “buying”, “need” | **Demand** | “Wanted: laptop under $500” |
 | Neutral / unclear | **Pending** | “Free couch?” (manual review) |
 
-Target: high auto-classify rate; edge cases go to **Pending**.
+Target: ~**95%** auto-classify to Supply or Demand; remainder **Pending** (see [`make/CLEAN_CLASSIFY.md`](make/CLEAN_CLASSIFY.md)).
 
 ---
 
@@ -201,10 +205,12 @@ Indicative ops cost (your mileage may vary): on the order of tens of dollars per
 
 1. **Airtable:** Follow [`airtable/SETUP.md`](airtable/SETUP.md) to create **Opportunity Hub** (tables, links, scoring fields, **Top Opportunities** view). Add formulas from [`airtable/formulas.md`](airtable/formulas.md). Publish the template URL in [`airtable/AIRTABLE_TEMPLATE.md`](airtable/AIRTABLE_TEMPLATE.md).
 2. **Ingest (Make):** Implement **Daily Pull** per [`make/DAILY_PULL.md`](make/DAILY_PULL.md) — schedule, RSS iterator, geocoding, Airtable **Raw Leads** create, **3×** retry, **Slack** on failure; optional CSV/webhook path with [`sample-data/manual-upload-template.csv`](sample-data/manual-upload-template.csv). Export blueprint into [`make/scenarios/`](make/scenarios/).
-3. Duplicate the base (from your template link) or continue in the same base; plug in API keys (Make, Google, Slack).
-4. Import remaining Make scenarios; reconnect modules to your Airtable base and Google Sheet.
-5. Load [`sample-data/sample-raw-leads.csv`](sample-data/sample-raw-leads.csv) to validate paths.
-6. Add real RSS URLs and run a dry-run day before production.
+3. **Clean & Classify (Make):** Implement per [`make/CLEAN_CLASSIFY.md`](make/CLEAN_CLASSIFY.md); export [`clean-classify.json`](make/scenarios/clean-classify.json).
+4. **Match & Score (Make):** Implement per [`make/MATCH_AND_SCORE.md`](make/MATCH_AND_SCORE.md); export [`match-and-score.json`](make/scenarios/match-and-score.json).
+5. Duplicate the base (from your template link) or continue in the same base; plug in API keys (Make, Google, Slack).
+6. Import remaining Make scenarios (e.g. Daily Top 10); reconnect modules to your Airtable base and Google Sheet.
+7. Load [`sample-data/sample-raw-leads.csv`](sample-data/sample-raw-leads.csv) to validate paths.
+8. Add real RSS URLs and run a dry-run day before production.
 
 ---
 

@@ -1,46 +1,45 @@
 {
   "meta": {
-    "_repo_note": "Template flow for Make. Export your working scenario from Make and replace this file for a production-ready blueprint.",
+    "_repo_note": "Flow template. Export the real Blueprint from Make after connecting modules.",
     "scenario_name": "Match & Score — Classified pairs → Matches",
-    "trigger": "Iterator / Airtable search on new Classified (Supply and Demand batches)",
-    "version": "1.0.0"
+    "thresholds": {
+      "strong_match": ">70",
+      "top_opportunities_view": ">80 and last 24h"
+    },
+    "version": "1.1.0"
   },
-  "matching_rules": [
-    "Location: same city OR Distance Matrix ≤ 50 miles",
-    "Category: exact match OR allowed parent/child map",
-    "Price: demand max ≥ supply price within ±20%",
-    "Keywords: ≥ 3 overlaps (fuzzy via Text Parser)"
-  ],
-  "flow": [
-    {
-      "step": 1,
-      "module": "Airtable — Search",
-      "action": "Batch of Classified with Label = Supply (or Demand-first, then pair)"
-    },
-    {
-      "step": 2,
-      "module": "Iterator",
-      "action": "For each candidate, find candidate opposite-side rows in same metro/category band"
-    },
-    {
-      "step": 3,
-      "module": "HTTP — Google Distance Matrix",
-      "action": "Compare origin/destination; reject if distance > 50 mi"
-    },
-    {
-      "step": 4,
-      "module": "Tools — Numeric compare",
-      "action": "Price fit: demand budget vs supply price"
-    },
-    {
-      "step": 5,
-      "module": "Text Parser",
-      "action": "Keyword overlap count; threshold ≥ 3"
-    },
-    {
-      "step": 6,
-      "module": "Airtable — Create/Update",
-      "action": "Matches table; set component fields for formula OR write Match_Score from Make math"
+  "rules": {
+    "location_max_miles": 50,
+    "location_api": "Google Distance Matrix (distance.value meters ≤ 80467)",
+    "category": "exact Category_Standard or parent-child map",
+    "price": "demand budget vs supply price; ±20% tolerance; Price_Fit 0-1",
+    "keywords_min_overlap": 3,
+    "keyword_tool": "Text parser / token overlap"
+  },
+  "matches_field_map": {
+    "table": "Matches",
+    "fields": {
+      "Matched_Supply": "Classified record id (Label=Supply)",
+      "Matched_Demand": "Classified record id (Label=Demand)",
+      "Loc_Match": "0 or 1",
+      "Cat_Match": "0 or 1",
+      "Price_Fit": "0-1",
+      "Keyword_Overlap": "0-1",
+      "Freshness_Mult": "0-1",
+      "Match_Score": "Airtable formula (see ../airtable/formulas.md)"
     }
+  },
+  "score_formula_reference": "(Loc_Match*30)+(Cat_Match*25)+(Price_Fit*20)+(Keyword_Overlap*15)+(Freshness_Mult*10)",
+  "flow": [
+    { "step": 1, "module": "Airtable — Search", "action": "Classified Label=Supply (batch)" },
+    { "step": 2, "module": "Iterator", "action": "Each supply row" },
+    { "step": 3, "module": "Airtable — Search", "action": "Classified Label=Demand same category" },
+    { "step": 4, "module": "Iterator", "action": "Each demand candidate" },
+    { "step": 5, "module": "HTTP", "action": "GET distancematrix/json origins & destinations" },
+    { "step": 6, "module": "Filter / Router", "action": "Skip if distance > 50 mi" },
+    { "step": 7, "module": "Numeric", "action": "Price_Fit from P_supply vs P_demand budget" },
+    { "step": 8, "module": "Text parser", "action": "Keyword overlap count ≥ 3 → Keyword_Overlap scalar" },
+    { "step": 9, "module": "Tools", "action": "Freshness_Mult from listing age" },
+    { "step": 10, "module": "Airtable — Create record", "action": "Matches; dedupe existing pair" }
   ]
 }

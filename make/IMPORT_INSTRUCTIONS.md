@@ -18,7 +18,11 @@ The JSON files committed here are **templates / documentation aids**. After you 
 
 ## Scenario files in this repo
 
-Full ingest spec (RSS, CSV, geocode, Slack, retries): [`DAILY_PULL.md`](DAILY_PULL.md).
+| Guide | Purpose |
+|-------|---------|
+| [`DAILY_PULL.md`](DAILY_PULL.md) | Ingest: RSS, CSV, geocode, Slack, retries |
+| [`CLEAN_CLASSIFY.md`](CLEAN_CLASSIFY.md) | Clean, category map, Supply/Demand/Pending Router → Classified |
+| [`MATCH_AND_SCORE.md`](MATCH_AND_SCORE.md) | Distance Matrix, price/keyword rules → Matches + score components |
 
 | File | Purpose |
 |------|---------|
