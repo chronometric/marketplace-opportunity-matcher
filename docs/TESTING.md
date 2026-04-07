@@ -48,14 +48,9 @@ After measurements:
 1. Edit [`README.md`](../README.md) **Impact & delivery** table (test volume, accuracy, uptime, cost, timeline).  
 2. Ensure **At a glance** and **Testing & reliability** do not contradict `docs/TESTING.md`.
 
-## 5. Portfolio assets
-
-Add redacted screenshots under [`assets/screenshots/`](../assets/screenshots/) and optionally embed one in the README. See [`assets/screenshots/README.md`](../assets/screenshots/README.md).
-
 ## Sign-off checklist
 
 - [ ] Labeled set evaluated; classification and match metrics recorded  
 - [ ] 14-day pilot completed or consciously skipped (document reason)  
 - [ ] Cost documented  
 - [ ] README numbers updated to measured values  
-- [ ] Screenshots added; secrets and PII redacted  
