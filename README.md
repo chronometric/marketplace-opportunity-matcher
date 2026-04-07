@@ -29,13 +29,37 @@
 | **Author** | *Your Name* |
 | **LinkedIn / portfolio** | *https://* |
 | **Airtable template** | [`airtable/AIRTABLE_TEMPLATE.md`](airtable/AIRTABLE_TEMPLATE.md) |
-| **Screenshots / demos** | [`assets/screenshots/`](assets/screenshots/) |
+| **Screenshots** | [Section below](#screenshots) · [`assets/screenshots/`](assets/screenshots/) |
 
 ---
 
 ## What this repo contains
 
 A reliable daily workflow to collect listings from online marketplaces (e.g., Craigslist, Facebook Marketplace where RSS/API exists), store and clean data in **Airtable**, apply **rule-based matching** (supply vs. demand), **score** opportunities, and output a prioritized **Top 10** list in **Google Sheets**. Automations run in **Make** (with Zapier as a CSV fallback), using APIs, RSS, and manual CSV upload. Designed for **500+ records/day** with high classification accuracy.
+
+---
+
+## Screenshots
+
+These embeds use **relative paths** so they render on GitHub once the matching PNG files exist in [`assets/screenshots/`](assets/screenshots/). **Redact** API keys, tokens, and PII before committing ([`assets/screenshots/README.md`](assets/screenshots/README.md)). Export captures from your own Airtable base, Make scenarios, and Google Sheet — this repo cannot generate those images for you.
+
+| **Airtable — Raw Leads** | **Airtable — Classified** |
+|:-:|:-:|
+| ![Raw Leads grid](assets/screenshots/airtable-raw-leads.png) | ![Classified Supply/Demand/Pending](assets/screenshots/airtable-classified.png) |
+| *New/processed pipeline* | *Router labels* |
+
+| **Airtable — Matches** | **Make — Daily Pull** |
+|:-:|:-:|
+| ![Matches by score](assets/screenshots/airtable-matches.png) | ![Make scenario canvas](assets/screenshots/make-daily-pull.png) |
+| *Sorted by Match_Score* | *Ingest & geocode flow* |
+
+<p align="center">
+  <b>Google Sheets — Daily Top 10</b><br />
+  <img src="assets/screenshots/sheets-daily-top-10.png" alt="Google Sheets Daily_Top_10 tab" width="820" /><br />
+  <sub>Prioritized shortlist for stakeholders.</sub>
+</p>
+
+*(Optional: add `make-flow-overview.png` in the same folder and embed it here if you want a second Make canvas — see [`assets/screenshots/README.md`](assets/screenshots/README.md).)*
 
 ---
 
